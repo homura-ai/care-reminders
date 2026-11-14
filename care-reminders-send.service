@@ -1,0 +1,9 @@
+# Part of care-reminders (install.sh and uninstall.sh only touch units with this line).
+[Unit]
+Description=Model-free care reminders (breaks, zoom-outs, meals, bedtime)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/.local/lib/care-reminders/care_send.py
+TimeoutStartSec=120
+UMask=0077

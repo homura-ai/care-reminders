@@ -1,0 +1,17 @@
+{
+  "app_name": "Care",
+  "prefix": "Care: ",
+  "lines": {
+    "wind_down": "Your bedtime is 23:30. Start winding down for sleep.",
+    "firm": "It is past your bedtime. Please stop and go to sleep now."
+  },
+  "break_minutes": 30,
+  "zoom_out_minutes": 15,
+  "spacing_minutes": 15,
+  "bedtime": {"wind_down": "22:30", "firm": "23:30", "end": "07:00", "firm_needs_activity_minutes": 15},
+  "night": {"start_hour": 23, "end_hour": 7, "idle_minutes": 90},
+  "notify": {"argv": ["notify-send", "--app-name={app}", "--urgency=normal", "{app}", "{text}"], "receipt": "exit0"},
+  "secondary": null,
+  "activity_cmd": null,
+  "run_windows": [["example", "2030-01-01T18:00:00", "2030-01-01T21:00:00"]]
+}
