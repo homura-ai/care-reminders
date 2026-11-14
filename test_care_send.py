@@ -8,7 +8,7 @@ os.environ['CARE_CONFIG'] = str(_TMP / 'config.json')
 (_TMP / 'config.json').write_text(json.dumps({
     'timezone': 'America/New_York', 'prefix': 'Care: ',
     # A bedtime after midnight; test_bedtime_before_midnight... covers the other kind.
-    'bedtime': {'wind_down': '02:15', 'firm': '03:30', 'end': '08:00'},
+    'bedtime': {'wind_down': '01:15', 'firm': '02:30', 'end': '08:00'},
     'night': {'start_hour': 22, 'end_hour': 8},
     'notify': {'argv': ['fake-notify', '{text}'], 'receipt': 'queued'}}))
 import importlib.util, time
@@ -105,35 +105,35 @@ def bed_state(**kw):
     value={'last_reminder':{},'cadence_started_at':None}
     value.update(kw);return value
 def test_wind_down_boundaries_and_catchup():
-    for h,m,expected in [(2,14,[]),(2,15,['wind_down']),(2,47,['wind_down']),(3,29,['wind_down']),(3,30,[])]:
+    for h,m,expected in [(1,14,[]),(1,15,['wind_down']),(1,47,['wind_down']),(2,29,['wind_down']),(2,30,[])]:
         assert cf.bedtime_kinds(bed_state(),{},night_time(h,m))==expected
     assert cf.bedtime_kinds(bed_state(),{},night_time(12))==[]
 def test_bedtime_once_per_night_and_next_night():
-    s=bed_state(last_reminder={'wind_down':datetime.fromtimestamp(night_time(2,16),timezone.utc).isoformat()})
-    assert cf.bedtime_kinds(s,{},night_time(2,47))==[]
-    assert cf.bedtime_kinds(s,{},night_time(2,15,day=13))==['wind_down']
-    own={'last_by_kind':{'firm':night_time(3,31)}}
-    assert cf.bedtime_kinds(bed_state(),own,night_time(3,40),night_time(3,39))==[]
+    s=bed_state(last_reminder={'wind_down':datetime.fromtimestamp(night_time(1,16),timezone.utc).isoformat()})
+    assert cf.bedtime_kinds(s,{},night_time(1,47))==[]
+    assert cf.bedtime_kinds(s,{},night_time(1,15,day=13))==['wind_down']
+    own={'last_by_kind':{'firm':night_time(2,31)}}
+    assert cf.bedtime_kinds(bed_state(),own,night_time(2,40),night_time(2,39))==[]
 def test_firmer_requires_recent_main_activity():
-    now=night_time(3,30)
+    now=night_time(2,30)
     for activity in (None,now-901,now+1):
         assert cf.bedtime_kinds(bed_state(),{},now,activity)==[]
     assert cf.bedtime_kinds(bed_state(),{},now,now-60)==['firm']
     assert cf.bedtime_kinds(bed_state(),{},night_time(8),night_time(8))==[]
 def test_bedtime_gates_and_skips():
-    now=night_time(3,30)
+    now=night_time(2,30)
     base=bed_state()
     for extra in ({'personal_quiet':True},{'sleeping':True,'sleeping_since':'2026-11-12T07:00:00Z'},{'postponed_until':'2026-11-12T09:00:00Z'}):
-        assert cf.decide(bed_state(**extra),{},now,False,3,now)[0] is not None
-    assert cf.decide(base,{},now,True,3,now)[0]=='in run'
-    assert cf.decide(bed_state(skips={'firm':None}),{},now,False,3,now)[1] is None
-    assert cf.decide(base,{},now,False,3,now)[1]==['firm']
+        assert cf.decide(bed_state(**extra),{},now,False,2,now)[0] is not None
+    assert cf.decide(base,{},now,True,2,now)[0]=='in run'
+    assert cf.decide(bed_state(skips={'firm':None}),{},now,False,2,now)[1] is None
+    assert cf.decide(base,{},now,False,2,now)[1]==['firm']
 def test_bedtime_shared_spacing_and_timezone():
-    now=night_time(3,30)
-    assert cf.decide(bed_state(),{'last_sent':now-60},now,False,3,now)[0]=='reminded recently'
-    # July uses EDT: 02:15 local is 06:15 UTC, not the winter 07:15 UTC.
-    summer=night_time(2,15,day=12,month=7)
-    assert datetime.fromtimestamp(summer,timezone.utc).hour==6
+    now=night_time(2,30)
+    assert cf.decide(bed_state(),{'last_sent':now-60},now,False,2,now)[0]=='reminded recently'
+    # July uses EDT: 01:15 local is 05:15 UTC, not the winter 06:15 UTC.
+    summer=night_time(1,15,day=12,month=7)
+    assert datetime.fromtimestamp(summer,timezone.utc).hour==5
     assert cf.bedtime_kinds(bed_state(),{},summer)==['wind_down']
 def test_bedtime_before_midnight_with_end_after_midnight():
     with patch.dict(cf.CFG['bedtime'], {'wind_down': '22:30', 'firm': '23:30', 'end': '07:00'}):
