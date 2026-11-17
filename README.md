@@ -14,7 +14,9 @@ for 90 minutes.
   with no send, no write and no lock.
 - `care` (`care_state.py`) records what you did: `care start`, `care ack
   break|zoom_out|meal`, `care snooze 30`, `care sleep`, `care awake`,
-  `care quiet on|off`, `care skip meal 60`, `care show`. `--dry-run` works here too.
+  `care quiet on|off`, `care skip meal 60`, `care show`. Put `--dry-run` before
+  these state commands, for example `care --dry-run snooze 30`; it does not
+  apply to `care run`.
 - `care run` (`care_run.py`, timer: every 30 s) is the run switch. `care run start
   [--minutes N]`, `stop`, `auto`, `status`. Scheduled windows come from
   `run_windows` (times without an offset are in `timezone`). Records carry a 90-second lease, so if the timer stops
@@ -27,7 +29,10 @@ for 90 minutes.
   activity in the last 15 minutes.** The wind-down note (default 22:30) still
   goes out. Set `activity_cmd` to any command that prints your latest activity
   time (ISO 8601 with a zone) if you want the firmer note, or reminders at
-  night while you are still working.
+  night while you are still working. For the T3 helper, use
+  `["python3", "~/.local/lib/care-reminders/care_activity.py", "--project", "PROJECT_ID", "--environment", "ENVIRONMENT_ID"]`
+  as `activity_cmd`, replacing both IDs. It prints nothing without both IDs
+  or when the CLI does not support `thread activity`.
 
 Config: `~/.config/care-reminders/config.json` (or `CARE_CONFIG`). State:
 `~/.local/state/care-reminders/` (or `CARE_STATE_DIR`). Every key is optional;
@@ -64,7 +69,7 @@ default notifier, or any command set in `notify`. Optional: the T3 Code CLI for
 ```bash
 ./install.sh            # copies to ~/.local/lib/care-reminders, links care, enables both timers
 care start              # begin the cadence
-care_send.py --dry-run  # ~/.local/lib/care-reminders/care_send.py: what it would send now
+python3 ~/.local/lib/care-reminders/care_send.py --dry-run  # what it would send now
 ```
 
 The timers are `care-reminders-run.timer` and `care-reminders-send.timer`.
